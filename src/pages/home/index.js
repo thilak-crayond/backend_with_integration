@@ -38,8 +38,6 @@ export default function Home() {
     );
 
     const handleBusStopSelect = (selectedBusStop) => {
-        // Do something with the selected bus stop
-        // console.log('Selected Bus Stop:', selectedBusStop);
         setSelectedBus(selectedBusStop)
     };
 
