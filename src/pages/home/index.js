@@ -41,8 +41,6 @@ export default function Home() {
         // Do something with the selected bus stop
         // console.log('Selected Bus Stop:', selectedBusStop);
         setSelectedBus(selectedBusStop)
-        console.log(selectedBus, "..");
-
     };
 
     return (
