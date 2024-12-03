@@ -1,135 +1,148 @@
-import SyncAltTwoToneIcon from '@mui/icons-material/SyncAltTwoTone';
-import { Box, Divider, InputBase, Tab, Tabs, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { homeStyle } from './style';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../store/auth';
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle,
+    Box,
+} from '@mui/material';
 
-export default function Home() {
-    const [value, setValue] = React.useState(0);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedBus, setSelectedBus] = useState('');
+const UserTable = () => {
+    const { profileState,
+        userData,
+        editId,
+        setEditId,
+        handleChange,
+        getUser,
+        addUser,
+        updateUser,
+        deleteUser,
+        loading,
+        error,
+        errorState
+    } = useAuth();
 
-    const [maxDate] = useState(new Date()?.toISOString()?.split('T')[0]);
+    console.log(errorState, "errorerrorerrorerrorerrorerror")
 
-    const busStops = [
-        'Chennai Mofussil',
-        'Koyambedu',
-        'Egmore Railway Station',
-        'Madurai Periyar',
-        'Coimbatore Gandhipuram',
-        'Trichy Central',
-        'Salem New',
-        'Tirunelveli Junction',
-        'Vellore New',
-        'Thanjavur Old',
-    ];
-
+    const [open, setOpen] = useState(false);
 
 
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
+    useEffect(() => {
+        getUser();
+    }, [getUser]);
+
+    const handleOpen = (user = {}) => {
+        setEditId(user.id || null);
+        handleChange('name', user.name || '');
+        handleChange('email', user.email || '');
+        handleChange('age', user.age || '');
+        setOpen(true);
     };
 
-    const handleInputChange = (e) => {
-        setSearchTerm(e.target.value);
+
+    const handleClose = () => {
+        setOpen(false);
     };
 
-    const filteredData = busStops.filter((item) =>
-        item.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleSubmit = async () => {
+        if (editId) {
+            await updateUser(editId, profileState);
+        } else {
+            if (errorState) {
+                alert(errorState)
+            } else {
+                await addUser(profileState);
+            }
+        }
+        handleClose();
+    };
 
-    const handleBusStopSelect = (selectedBusStop) => {
-        setSelectedBus(selectedBusStop)
+    const handleDelete = async (id) => {
+        await deleteUser(id);
     };
 
     return (
         <Box>
-            <Box sx={homeStyle.rootSx}>
-                <Typography sx={homeStyle.textSx}>Choose Transport</Typography>
-                <Tabs
-                    sx={homeStyle.tabSx}
-                    value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="One Way" aria-labelledby={`simple-tab-${0}`} />
-                    <Tab label="Round Trip" aria-labelledby={`simple-tab-${1}`} />
-                </Tabs>
-            </Box>
+            <TableContainer component={Paper} style={{
+                marginTop: '20px', boxShadow: 'none',
+            }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>First Name</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Age</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {userData?.map((user) => (
+                            <TableRow key={user.id}>
+                                <TableCell>{user.name}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{user.age}</TableCell>
+                                <TableCell>
+                                    <Button color="primary" onClick={() => handleOpen(user)}>
+                                        Edit
+                                    </Button>
+                                    <Button color="secondary" onClick={() => handleDelete(user.id)}>
+                                        Delete
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
-            <Box sx={{ bgcolor: '#FFFF', boxShadow: '0px 0px 4px 2px #E3E3E3', borderRadius: '8px', mt: 2.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', py: 2 }}>
-                    <Box>
-                        <Typography sx={homeStyle.placeHeaderSx}>FROM</Typography>
-                        {
-                            selectedBus?.length > 0 ?
-                                <Typography sx={homeStyle.placeSx}>
-                                    {selectedBus}
-                                </Typography>
-                                :
-                                <>
-                                    <TextField
-                                        type="text"
-                                        placeholder="Search bus stops..."
-                                        value={searchTerm}
-                                        onChange={handleInputChange}
-                                        sx={{
-                                            py: 1,
-                                            width: '120px',
-                                            '& .MuiOutlinedInput-input': {
-                                                height: '10px'
-                                            }
-                                        }}
-                                    />
-                                    {
-                                        searchTerm &&
-                                        <Box sx={{ bgcolor: '#405784', opacity: 0.9 }}>
-                                            {filteredData.map((item, index) => (
-                                                <Typography key={index} onClick={() => handleBusStopSelect(item)} sx={homeStyle.listItemSx}>
-                                                    {item}
-                                                </Typography>
-                                            ))}
-                                        </Box>
-                                    }
-                                </>
-                        }
-                    </Box>
-                    <SyncAltTwoToneIcon sx={{ color: '#00B6D9', fontSize: '30px' }} />
-                    <Box>
-                        <Typography sx={homeStyle.placeHeaderSx}>TO</Typography>
-                        <Typography sx={homeStyle.placeSx}>PRG</Typography>
-                    </Box>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', py: 1 }}>
-                    <InputBase
-                        type="date"
-                        inputProps={{
-                            min: maxDate,
-                        }}
-                        sx={{
-                            '& .MuiInputBase-input': {
-                                width: '140px',
-                                color: '#28385C',
-                                fontSize: '20px'
-                            }
-                        }}
-                    />
-                    <Box sx={{ pr: '38px' }}>
-                        <Divider orientation="vertical" />
-                    </Box>
-                    <InputBase
-                        type="time"
-                        inputProps={{
-                            min: maxDate,
-                        }}
-                        sx={{
-                            '& .MuiInputBase-input': {
-                                width: '95px',
-                                color: '#28385C',
-                                fontSize: '20px'
-                            }
+            <Button style={{
+                marginTop: '16px',
+                display: 'grid',
+                placeSelf: 'center'
+            }} variant="contained" color="primary" onClick={() => handleOpen()}>
+                Add User
+            </Button>
 
-                        }}
+         
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>{editId ? 'Edit User' : 'Add User'}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        margin="dense"
+                        label="First Name"
+                        name="name"
+                        value={profileState?.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
+                        fullWidth
                     />
-                </Box>
-            </Box>
-        </Box >
-    )
-}
+                    <TextField
+                        margin="dense"
+                        label="Email"
+                        name="email"
+                        value={profileState?.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        fullWidth
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Age"
+                        name="age"
+                        type="number"
+                        value={profileState?.age}
+                        onChange={(e) => handleChange('age', e.target.value)}
+                        fullWidth
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSubmit} color="primary">
+                        {editId ? 'Update' : 'Add'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
+    );
+};
+
+export default UserTable;

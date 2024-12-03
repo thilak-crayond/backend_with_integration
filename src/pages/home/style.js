@@ -37,6 +37,6 @@ export const homeStyle = {
             color: '#FFFF'
         }
     },
-    placeHeaderSx: { color: '#B4BCC4', fontSize: '14px' },
-    placeSx: { color: '#28385C', fontSize: '20px', fontWeight: 900, width: '123px' }
+    placeHeaderSx: { color: '#000', fontSize: '14px' },
+    placeSx: { color: '#28385C', fontSize: '20px', fontWeight: 900 }
 }
